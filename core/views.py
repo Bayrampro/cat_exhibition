@@ -8,7 +8,7 @@ from .serializers import CatSerializer, KindSerializer, RatingSerializer
 
 
 class CatListAPIView(generics.ListAPIView):
-    queryset = Cat.objects.all()
+    queryset = Cat.objects.all().order_by('pk')
     serializer_class = CatSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -197,3 +197,30 @@ class RateCatAPIView(generics.CreateAPIView):
         cat = Cat.objects.get(id=cat_id)
 
         serializer.save(user=self.request.user, cat=cat)
+
+
+class CatsByUser(generics.ListAPIView):
+    queryset = Cat.objects.all()
+    serializer_class = CatSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description='Возвращает список котят конкретного юзера',
+        responses={200:CatSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                'user_id',
+                openapi.IN_PATH,
+                description='ID Пользователя',
+                required=True,
+                type=openapi.TYPE_INTEGER
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        queryset = Cat.objects.filter(user_id=user_id).order_by('pk')
+        return queryset

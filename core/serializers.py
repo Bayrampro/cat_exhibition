@@ -9,11 +9,9 @@ class KindSerializer(serializers.ModelSerializer):
 
 
 class CatSerializer(serializers.ModelSerializer):
-    kind_id = serializers.PrimaryKeyRelatedField(
-        queryset=Kind.objects.all(),
-        source='kind',
-        write_only=True,
-    )
+
+    kind = KindSerializer(read_only=True)
+    kind_id = serializers.PrimaryKeyRelatedField(queryset=Kind.objects.all(), source='kind')
 
     class Meta:
         model = Cat
